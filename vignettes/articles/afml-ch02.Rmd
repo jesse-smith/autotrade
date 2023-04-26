@@ -1,0 +1,90 @@
+---
+title: "Advances in Financial Machine Learning: Chapter 2"
+subtitle: "Financial Data Structures"
+---
+
+# {.tabset .tabset-fade}
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## 2.1 Motivation
+
+* Derive structured datasets from unstructured or minimally structured data
+* Using someone else's processed data usually leads to discovering what they already know
+
+## 2.2 Essential Type of Financial Data
+
+* Fundamental Data
+  * Regulatory filings and business analytics, reported quarterly
+  * Always published with a lag after the official report date (commonly misaligned b/c of this)
+  * Commonly backfilled or reinstated, meaning current values were not available at release
+  * Extremely structured, low frequency, and accessible = usu. little unexploited value on its own
+* Market Data
+* Analytics Data
+* Alternative Data
+
+## 2.3 Bars
+
+* Bars are the financial term for rows in a dataset
+* Can create regular bars using either standard methods or information-driven methods (the latter is rare in literature)
+* Standard Bars
+  * Time Bars
+    * Aggregated in fixed time intervals
+    * Most commonly used bars
+    * Should be avoided b/c
+      * Markets do not process information at a constant rate (i.e. fewer shares are traded at noon that open)
+      * Exhibit poor statistical properties (autocorrelation, heteroskedasticity, non-normality of returns, etc.)
+  * Tick Bars
+    * Aggregate fixed number of ticks (transactions)
+    * Closer to Gaussian distribution of returns
+  * Volume Bars
+    * Aggregate fixed volume of shares
+    * Even closer to Gaussian
+    * Convenient for many microstructure theories
+  * Dollar Bars
+    * Sample fixed amount of trade value
+    * More stable than other bars in price fluctuations and splits
+    
+```{r bars}
+d <- setDT(tidyquant::tq_get("^GSPC", from = "1990-01-01"))
+# Volume bars (use max vol)
+max_vol <- max(d$volume)
+n_vol <- ceiling(sum(d$volume) / max_vol)
+d_vol <- data.table(
+  symbol = "^GSPC",
+  date = lubridate::Date(n_vol),
+  open = numeric(n_vol),
+  high = numeric(n_vol),
+  low = numeric(n_vol),
+  close = numeric(n_vol),
+  volume = numeric(n_vol),
+  adjusted = numeric(n_vol)
+)
+vol <- 0
+i_vol <- 1L
+i0 <- 1L
+set(d_vol, i = i0, j = "open", value = d$open[[i0]])
+for (i in seq_len(NROW(d))) {
+  vol <- vol + d$volume[[i]]
+  if (vol >= max_vol) {
+    set(
+      d_vol, i = i_vol,
+      j = c("date", "high", "low", "close", "volume", "adjusted"),
+      value = list(d$date[[i]], max(d$high[i0:i]), min(d$low[i0:i]), d$close[[i]], vol, d$adjusted[[i]])
+    )
+    vol <- 0
+    i0 <- i + 1L
+    i_vol <- i_vol + 1L
+    if (i0 <= NROW(d)) set(d_vol, i = i_vol, j = "open", value = d$open[[i0]])
+  }
+}
+```
+
+## 2.4 Dealing with Multi-Product Series
+
+## 2.5 Sampling Features

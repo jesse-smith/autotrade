@@ -1,0 +1,31 @@
+---
+title: 'Advances in Financial Machine Learning: Chapter 1'
+subtitle: Financial Machine Learning as a Distinct Subject
+---
+
+# {.tabset .tabset-fade}
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## 1.1 Motivation
+
+## 1.2 Why FML Projects Fail
+
+## 1.3 Book Structure
+
+## 1.4 Target Audience
+
+## 1.5 Requisites
+
+## 1.6 FAQs
+
+## 1.7 Acknowledgements
+
+## Exercises
+
+## References
